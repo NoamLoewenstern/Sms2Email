@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "23690057339",
+    "project_id": "sms2emailapp",
+    "storage_bucket": "sms2emailapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:23690057339:android:126031633730ac640474de",
+        "android_client_info": {
+          "package_name": "com.example.sms2email"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "23690057339-a4v7s8q62mij8hve6vjugif2qdfvk2ev.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA5Q_EHBuuQKUHzuDwCZL5gsTEYsMDSncA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "23690057339-4oh36nmo0co07vuekk7575ib1u0asipu.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "23690057339-vct05o9c19pomvkn05d3v5qaavv2h97o.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.sms2email"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
