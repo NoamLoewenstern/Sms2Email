@@ -1,37 +1,29 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sms2email/utils/auth.dart';
 
-import '../utils/toast.dart';
 import 'home_screen.dart';
 
+final GoogleSignIn googleSignIn = GoogleSignIn(scopes: ['openid']);
+
 class LoginPage extends StatelessWidget {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  const LoginPage({super.key});
 
-  LoginPage({super.key});
-
-  Future<User> _handleSignIn() async {
-    final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-    if (googleUser == null) {
-      showToast("googleUser is null");
-      throw Exception("googleUser is null");
+  Future<User?> _handleSignIn({required BuildContext context}) async {
+    User? user = await Authentication.signInWithGoogle(context: context);
+    if (user != null) {
+      Future.delayed(Duration.zero, () {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomePage(
+              user: user,
+            ),
+          ),
+        );
+      });
     }
-
-    final GoogleSignInAuthentication googleAuth =
-        await googleUser.authentication;
-    final AuthCredential credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
-    final User user = (await _auth.signInWithCredential(credential)).user!;
-    if (user.displayName == null) {
-      showToast("user.displayName is null");
-      // return null;
-      throw Exception("user.displayName is null");
-    }
-    showToast("signed in ${user.displayName!}");
-    // currentUser = user;
     return user;
   }
 
@@ -44,16 +36,7 @@ class LoginPage extends StatelessWidget {
           children: <Widget>[
             const Text('Please sign in'),
             ElevatedButton(
-              onPressed: () {
-                _handleSignIn()
-                    .then((User user) => Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => MyHomePage(
-                                  user: user,
-                                ))))
-                    .catchError((e) => showToast(e));
-              },
+              onPressed: () => _handleSignIn(context: context),
               child: const Text('Sign in with Google'),
             ),
           ],

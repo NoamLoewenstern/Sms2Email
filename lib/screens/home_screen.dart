@@ -2,91 +2,58 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sms2email/utils/toast.dart';
 
 import '../main.dart';
+import '../utils/auth.dart';
+import '../utils/settings.dart';
 import '../utils/sms_handler.dart';
 
-final FirebaseAuth _auth = FirebaseAuth.instance;
-final GoogleSignIn _googleSignIn = GoogleSignIn();
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, this.title = 'Sms2Email', required this.user});
+class HomePage extends StatefulWidget {
+  const HomePage({super.key, this.title = 'Sms2Email', required this.user});
 
   final User user;
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  bool _isSmsListenerEnabled = true;
-  final SmsFirebaseController smsFirebaseController = SmsFirebaseController();
-  final StreamController<bool> _controllerChangeSmsState =
-      StreamController<bool>();
+class _HomePageState extends State<HomePage> {
+  bool _isSmsListenerEnabled = prefs.shouldListen2SMSInBG;
+  bool _hasSMSPermissions = hasSMSPermissions();
 
   @override
   void initState() {
     super.initState();
-    smsFirebaseController.initPlatformState();
-    _controllerChangeSmsState.stream.listen(onSmsListenerStateChange);
     _loadSmsListenerState();
   }
 
-  @override
-  void dispose() {
-    _controllerChangeSmsState.close();
-    super.dispose();
-  }
-
-  void onSmsListenerStateChange(bool smsState) async {
-    showToast("sms listener state changed to $smsState");
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setBool('_isSmsListenerEnabled', smsState);
-    if (smsState) {
-      smsFirebaseController.registerStartSMSListener();
-    } else {
-      smsFirebaseController.unregisterSmsListener();
-    }
-  }
-
   _loadSmsListenerState() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool smsState = prefs.getBool('_isSmsListenerEnabled') ?? false;
+    await toggleSmsListenerState(_isSmsListenerEnabled);
+  }
+
+  Future<void> handleOnChangeSmsListenerState(bool smsState) async {
     setState(() {
       _isSmsListenerEnabled = smsState;
-      _controllerChangeSmsState.add(smsState);
     });
+    await toggleSmsListenerState(smsState);
   }
 
   void _handleSignOut() async {
-    await _auth.signOut();
-    await _googleSignIn.signOut();
-    showToast("signed out");
-    smsFirebaseController.unregisterSmsListener();
-
+    await Authentication.signOut(context: context);
     // navigate to login page, without stack
-    Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const MyApp()),
-        (Route<dynamic> route) => false);
-  }
-
-  void handleOnChangeSmsListenerState(bool smsState) {
-    setState(() {
-      _isSmsListenerEnabled = smsState;
-      _controllerChangeSmsState.add(smsState);
+    Future.delayed(Duration.zero, () {
+      Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const MyApp()),
+          (Route<dynamic> route) => false);
     });
   }
 
-  void _handleSendSms() {
-    smsFirebaseController.sendSMSToMe('test');
-  }
-
-  void _requestSMSPermission() {
-    smsFirebaseController.initPlatformState();
+  onRequestSMSPermission() async {
+    await assureHasSMSPermissions();
+    setState(() {
+      _hasSMSPermissions = hasSMSPermissions();
+    });
   }
 
   @override
@@ -112,14 +79,12 @@ class _MyHomePageState extends State<MyHomePage> {
               value: _isSmsListenerEnabled,
               onChanged: handleOnChangeSmsListenerState,
             ),
-            ElevatedButton(
-              onPressed: _handleSendSms,
-              child: const Text('Send SMS'),
-            ),
-            ElevatedButton(
-              onPressed: _requestSMSPermission,
-              child: const Text('Request SMS Permission'),
-            ),
+            _hasSMSPermissions
+                ? const Text('SMS Permission Granted')
+                : ElevatedButton(
+                    onPressed: onRequestSMSPermission,
+                    child: const Text('Request SMS Permission'),
+                  ),
           ],
         ),
       ),
