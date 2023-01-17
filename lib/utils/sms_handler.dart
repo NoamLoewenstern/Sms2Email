@@ -47,26 +47,32 @@ backgrounOnSMSMessageHandler(SmsMessage message) async {
   }
   showToast("received message in background: ${message.body}");
 
-  _addMessageToCollection(message.body!);
-}
-
-void _addMessageToCollection(String message) {
-  User? user = auth.currentUser;
-  if (user == null) {
-    showToast("user is null");
-    return;
-  }
-  firestore.collection("users").doc(user.uid).collection('messages').add({
-    'message': message,
-  }).then((value) {
-    showToast("$message added to firestore");
-  });
+  _addMessageToCollection(message);
 }
 
 void onMessageReceived(SmsMessage message) {
   String messageBody = message.body ?? 'error reading message body';
   showToast(messageBody);
-  _addMessageToCollection(messageBody);
+  _addMessageToCollection(message);
+}
+
+void _addMessageToCollection(SmsMessage message) {
+  User? user = auth.currentUser;
+  if (user == null) {
+    showToast("user is null");
+    return;
+  }
+  String createdAt = message.date != null
+      ? DateTime(message.date!).toIso8601String()
+      : DateTime.now().toIso8601String();
+
+  firestore.collection("users").doc(user.uid).collection('messages').add({
+    'sender': message.address ?? '',
+    'text': message.body ?? '',
+    'createdAt': createdAt,
+  }).then((value) {
+    showToast("$message added to firestore");
+  });
 }
 
 Future<void> registerStartSMSListener() async {
