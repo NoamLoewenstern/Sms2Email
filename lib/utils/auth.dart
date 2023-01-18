@@ -1,14 +1,14 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+import 'settings.dart';
+import 'sms_handler.dart';
 import 'toast.dart';
 
 class Authentication {
   static Future<User?> signInWithGoogle({required BuildContext context}) async {
-    FirebaseAuth auth = FirebaseAuth.instance;
-    User? user;
-
     final GoogleSignIn googleSignIn = GoogleSignIn();
 
     final GoogleSignInAccount? googleSignInAccount =
@@ -24,10 +24,11 @@ class Authentication {
       );
 
       try {
-        final UserCredential userCredential =
-            await auth.signInWithCredential(credential);
+        // await FirebaseAuth.instance.setPersistence(Persistence.LOCAL);
+        UserCredential userCredential =
+            await FirebaseAuth.instance.signInWithCredential(credential);
 
-        user = userCredential.user;
+        return userCredential.user;
       } on FirebaseAuthException catch (e) {
         if (e.code == 'account-exists-with-different-credential') {
           Future.delayed(Duration.zero, () {
@@ -58,8 +59,7 @@ class Authentication {
         });
       }
     }
-
-    return user;
+    return null;
   }
 
   static Future<void> signOut({required BuildContext context}) async {
@@ -68,6 +68,9 @@ class Authentication {
     try {
       await googleSignIn.signOut();
       await FirebaseAuth.instance.signOut();
+      await toggleSmsListenerState(false);
+      prefs.shouldListen2SMSInBG = false;
+      prefs.fbUserUID = null;
       showToast("signed out");
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -87,5 +90,24 @@ class Authentication {
         style: const TextStyle(color: Colors.redAccent, letterSpacing: 0.5),
       ),
     );
+  }
+}
+
+// function to check if user is signed in, and user exists on remote firestore
+Future<bool> doesFirebaseUserExistRemotely() async {
+  final User? user = FirebaseAuth.instance.currentUser;
+  if (user == null) {
+    return false;
+  }
+  try {
+    final DocumentSnapshot<Map<String, dynamic>> doc = await FirebaseFirestore
+        .instance
+        .collection('users')
+        .doc(user.uid)
+        .get();
+    return doc.exists;
+  } catch (e) {
+    print(e.toString());
+    return false;
   }
 }

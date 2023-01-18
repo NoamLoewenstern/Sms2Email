@@ -40,9 +40,9 @@ dependencies:
   cloud_firestore: ^4.3.1
   google_sign_in: ^5.4.3
   fluttertoast: ^8.1.2
-  # sms: ^0.2.4
   telephony: ^0.2.0
   shared_preferences: ^2.0.15
+  cloud_functions: ^4.0.7
 
 dev_dependencies:
   flutter_test:

@@ -1,0 +1,14 @@
+rules_version = '2';
+
+// rules: only allow auth user to write to his own entry in the users collection
+// and only allow auth user to read his own entry in the users collection
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{user}/messages {
+      allow write: if request.auth.uid == user;
+    }
+    match /users/{user}/messages/{message} {
+      allow write: if request.auth.uid == user;
+    }
+  }
+}

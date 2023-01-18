@@ -18,14 +18,22 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   bool _isSmsListenerEnabled = prefs.shouldListen2SMSInBG;
   bool _hasSMSPermissions = hasSMSPermissions();
+  String recentSMS = prefs.recentSMS ?? 'No recent SMS';
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadSmsListenerState();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
   _loadSmsListenerState() async {
@@ -57,6 +65,22 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      return;
+    }
+    if (prefs.recentSMS != null && prefs.recentSMS != recentSMS) {
+      setState(() {
+        recentSMS = prefs.recentSMS ?? 'No recent SMS';
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -85,6 +109,7 @@ class _HomePageState extends State<HomePage> {
                     onPressed: onRequestSMSPermission,
                     child: const Text('Request SMS Permission'),
                   ),
+            Text('Recent SMS: $recentSMS'),
           ],
         ),
       ),

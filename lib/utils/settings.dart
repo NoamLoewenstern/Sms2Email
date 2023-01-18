@@ -1,4 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:safe_device/safe_device.dart';
 
 class SimplePrefs {
   static final SimplePrefs _instance = SimplePrefs._internal();
@@ -32,6 +33,40 @@ class SimplePrefs {
   set shouldListen2SMSInBG(bool value) {
     _prefs.setBool('shouldListen2SMSInBG', value);
   }
+
+  String? get fbUserUID {
+    return _prefs.getString('fbUserUID');
+  }
+
+  set fbUserUID(String? value) {
+    if (value == null) {
+      _prefs.remove('fbUserUID');
+    } else {
+      _prefs.setString('fbUserUID', value);
+    }
+  }
+
+  String? get recentSMS {
+    return _prefs.getString('recentSMS');
+  }
+
+  set recentSMS(String? value) {
+    if (value == null) {
+      _prefs.remove('recentSMS');
+    } else {
+      _prefs.setString('recentSMS', value);
+    }
+  }
+}
+
+// check if running on local avd, or phiysical device
+
+Future<bool> isAndroidEmulator() async {
+  return !await SafeDevice.isRealDevice;
+  // if (Platform.isAndroid) {
+  //   return Platform.environment['ANDROID_EMULATOR'] == 'true';
+  // }
+  // return false;
 }
 
 final prefs = SimplePrefs();

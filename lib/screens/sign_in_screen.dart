@@ -1,30 +1,28 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sms2email/utils/auth.dart';
+import 'package:sms2email/utils/toast.dart';
 
+import '../main.dart';
 import 'home_screen.dart';
-
-final GoogleSignIn googleSignIn = GoogleSignIn(scopes: ['openid']);
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
 
-  Future<User?> _handleSignIn({required BuildContext context}) async {
+  void _handleSignIn(BuildContext context) async {
     User? user = await Authentication.signInWithGoogle(context: context);
-    if (user != null) {
-      Future.delayed(Duration.zero, () {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => HomePage(
-              user: user,
-            ),
-          ),
-        );
-      });
+    if (user == null) {
+      showToast('Sign in failed');
+      return;
     }
-    return user;
+    await Authentication.signInWithGoogle(context: context);
+    // navigate to login page, without stack
+    Future.delayed(Duration.zero, () {
+      Navigator.of(context).pushAndRemoveUntil(
+          // MaterialPageRoute(builder: (context) => HomePage(user: user)),
+          MaterialPageRoute(builder: (context) => const WelcomeScreen()),
+          (Route<dynamic> route) => false);
+    });
   }
 
   @override
@@ -36,7 +34,7 @@ class LoginPage extends StatelessWidget {
           children: <Widget>[
             const Text('Please sign in'),
             ElevatedButton(
-              onPressed: () => _handleSignIn(context: context),
+              onPressed: () => _handleSignIn(context),
               child: const Text('Sign in with Google'),
             ),
           ],
