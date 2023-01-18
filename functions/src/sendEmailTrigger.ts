@@ -41,6 +41,7 @@ export const sendEmailOnMessageCreate = functions.firestore
         subject: `New message from ${senderNumber}`,
         text: `New message from: ${senderNumber}\n-----\n${text}\n\n-----`,
       });
+      console.log(`Email sent to ${RECIPIENT_EMAIL} for message ${messageId}`);
     } catch (error) {
       console.error(error);
     }
