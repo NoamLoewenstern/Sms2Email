@@ -76,7 +76,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       });
       futureRerender();
     });
-    var u = FirebaseAuth.instance.currentUser;
     doesFirebaseUserExistRemotely().then((bool exists) async {
       if (FirebaseAuth.instance.currentUser != null && !exists) {
         await Authentication.signOut(context: context);
