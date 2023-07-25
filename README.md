@@ -1,16 +1,16 @@
 # sms2email
 
-A new Flutter project.
+## Description
 
-## Getting Started
+A simple mobile app to forward all SMS messages to an email address.
 
-This project is a starting point for a Flutter application.
+## Motivation
 
-A few resources to get you started if this is your first Flutter project:
+- To learn how to build a mobile app using Flutter
+- Helps to have another phone which receives all SMS messages and forwards them to my email address
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Examples
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+![Website Example Gif][website-flow]
+
+[website-flow]: /examples/main-screen.jpg
